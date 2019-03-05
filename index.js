@@ -1,3 +1,4 @@
+'use strict';
 import {DatePicker} from "./src/DatePicker"
 
 export {
