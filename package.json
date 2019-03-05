@@ -1,0 +1,14 @@
+{
+  "name": "rn-selector",
+  "version": "1.0.3",
+  "description": "selector",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Wayaer",
+  "license": "ISC",
+  "dependencies": {
+    "rn-wayaer": "^1.0.1"
+  }
+}
