@@ -1,6 +1,6 @@
 {
   "name": "rn-selector",
-  "version": "1.0.3",
+  "version": "1.0.5",
   "description": "selector",
   "main": "index.js",
   "scripts": {
@@ -9,6 +9,6 @@
   "author": "Wayaer",
   "license": "ISC",
   "dependencies": {
-    "rn-wayaer": "^1.0.1"
+    "wayae": "^1.0.1"
   }
 }

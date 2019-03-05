@@ -1,9 +1,9 @@
 'use strict';
 import React, {Component} from 'react';
 import {Wheel} from "teaset";
-import {Button, CenterView, TouchView} from "rn-wayaer";
-import {Colors, Constant, FontSize} from "rn-wayaer"
-import {BaseTools} from "rn-wayaer";
+import {Button, CenterView, TouchView} from "wayae";
+import {Colors, Constant, FontSize} from "wayae"
+import {BaseTools} from "wayae";
 
 export class DatePicker extends Component {
     /*
