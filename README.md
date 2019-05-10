@@ -7,19 +7,16 @@
 
 
 
-
-
-
-
 #属性
-pickerType || 'dateTime'  类型  
+
+```pickerType || 'dateTime'  类型  
 
    
-     * pickerType:
+    /* pickerType:
      *       date        =>年月日选择
      *       dateTime    =>年月日时分秒选择
      *       time        =>时分秒选择
-     
+     */
      
  itemHeight         单层item高度
  
@@ -38,16 +35,16 @@ pickerType || 'dateTime'  类型
  showUnit || true  是否显示文字（年月日）
  
  pickerTimeInterval || ['2019-01-01', '2029-01-01']   选择时间区间
- 
+ ```
 
  
  
- #事件
- 
+#事件
+```
 onSure     确定 回调
 
 onCancel   取消 回调
-
+```
 
 
 #例
