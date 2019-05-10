@@ -1,11 +1,11 @@
 {
   "name": "rn-selector",
-  "version": "1.0.9",
+  "version": "1.0.10",
   "description": "selector",
   "main": "index.js",
   "scripts": {
     "npmPublish": "npm publish",
-    "npmUnPublish": "npm unpublish rn-selector@1.0.8"
+    "npmUnPublish": "npm unpublish rn-selector@1.0.9"
   },
   "author": "Wayaer",
   "license": "ISC",
