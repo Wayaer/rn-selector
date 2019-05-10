@@ -1,6 +1,8 @@
 'use strict';
-import {DatePicker} from "./src/DatePicker"
+import RNSelector from './src/Tools'
 
-export {
-    DatePicker,
+export * from "./src/DatePicker";
+export  {
+    RNSelector
 }
+

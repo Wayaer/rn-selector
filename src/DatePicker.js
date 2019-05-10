@@ -1,9 +1,11 @@
 'use strict';
 import React, {Component} from 'react';
+import Tools from './Tools'
 import {Wheel} from "teaset";
-import {Button, CenterView, TouchView} from "wayae";
-import {Colors, Constant, FontSize} from "wayae"
-import {BaseTools} from "wayae";
+import {Button, CenterView, TouchView} from "./Component";
+import {Dimensions} from "react-native";
+
+const {height, width, scale} = Dimensions.get('window');
 
 export class DatePicker extends Component {
     /*
@@ -15,7 +17,7 @@ export class DatePicker extends Component {
 
     constructor(props) {
         super(props);
-        this.itemHeight = props.itemHeight || BaseTools.getHeight(35)
+        this.itemHeight = props.itemHeight || Tools.getHeight(35)
         this.pickerType = props.pickerType || 'dateTime'
         this.title = props.title || 'Select'
         this.cancelText = props.cancelText || 'cancel'
@@ -25,7 +27,7 @@ export class DatePicker extends Component {
         this.sureTouchStyle = props.sureTouchStyle || {}
         this.sureTextStyle = props.sureTextStyle || {}
         this.titleTextStyle = props.titleTextStyle || {}
-        this.textStyle = props.textStyle || {color: Colors.gray153153}
+        this.textStyle = props.textStyle || {color: '#DCDCDC'}
         this.textViewStyle = this.props.textViewStyle || {
             marginTop: this.itemHeight * 2,
             height: this.itemHeight,
@@ -103,70 +105,70 @@ export class DatePicker extends Component {
 
     renderWheel = (pickerType) => {
         let view = <TouchView/>
-        let width = 80
+        let itemWidth = 80
         switch (pickerType) {
             case 'date':
-                width = (Constant.Screen_Width - BaseTools.getWidth(30)) / 5
+                itemWidth = (width - Tools.getWidth(30)) / 5
                 view = <TouchView style={{flexDirection: 'row'}}>
-                    {this.renderWheelItem(this.state.years, width, (selectValue) => {
+                    {this.renderWheelItem(this.state.years, itemWidth, (selectValue) => {
                         this.selectYears = this.state.years[selectValue]
                         this.leapYear(selectValue)
                     })}
                     {this.showUnit && this.renderTextItem('年')}
-                    {this.renderWheelItem(this.state.months, width, (selectValue) => {
+                    {this.renderWheelItem(this.state.months, itemWidth, (selectValue) => {
                         this.selectMonths = this.state.months[selectValue]
                         this.sizeMonth(selectValue)
                     })}
                     {this.showUnit && this.renderTextItem('月')}
-                    {this.renderWheelItem(this.state.days, width, (selectValue) => {
+                    {this.renderWheelItem(this.state.days, itemWidth, (selectValue) => {
                         this.selectDays = this.state.days[selectValue]
                     })}
                     {this.showUnit && this.renderTextItem('日')}
                 </TouchView>
                 break;
             case 'dateTime':
-                width = (Constant.Screen_Width - BaseTools.getWidth(35)) / 8
+                itemWidth = (width - Tools.getWidth(35)) / 8
                 view = <TouchView style={{flexDirection: 'row'}}>
-                    {this.renderWheelItem(this.state.years, width, (selectValue) => {
+                    {this.renderWheelItem(this.state.years, itemWidth, (selectValue) => {
                         this.selectYears = this.state.years[selectValue]
                         this.leapYear(this.state.years[selectValue])
                     })}
                     {this.showUnit && this.renderTextItem('年')}
-                    {this.renderWheelItem(this.state.months, width, (selectValue) => {
+                    {this.renderWheelItem(this.state.months, itemWidth, (selectValue) => {
                         this.selectMonths = this.state.months[selectValue]
                         this.sizeMonth(selectValue)
                     })}
                     {this.showUnit && this.renderTextItem('月')}
-                    {this.renderWheelItem(this.state.days, width, (selectValue) => {
+                    {this.renderWheelItem(this.state.days, itemWidth, (selectValue) => {
                         this.selectDays = this.state.days[selectValue]
                     })}
                     {this.showUnit && this.showUnit && this.renderTextItem('日')}
-                    {this.renderWheelItem(this.state.hours, width, (selectValue) => {
+                    {this.renderWheelItem(this.state.hours, itemWidth, (selectValue) => {
                         this.selectHours = this.state.hours[selectValue]
                     })}
                     {this.showUnit && this.renderTextItem('时')}
-                    {this.renderWheelItem(this.state.minutes, width, (selectValue) => {
+                    {this.renderWheelItem(this.state.minutes, itemWidth, (selectValue) => {
                         this.selectMinutes = this.state.minutes[selectValue]
                     })}
                     {this.showUnit && this.renderTextItem('分')}
-                    {this.renderWheelItem(this.state.seconds, width, (selectValue) => {
+                    {this.renderWheelItem(this.state.seconds, itemWidth, (selectValue) => {
                         this.selectSeconds = this.state.seconds[selectValue]
                     })}
                     {this.showUnit && this.renderTextItem('秒')}
                 </TouchView>
                 break;
             case 'time':
-                width = (Constant.Screen_Width - BaseTools.getWidth(30)) / 5
+                itemWidth = (width - Tools.getWidth(30)) / 5
                 view = <TouchView style={{flexDirection: 'row'}}>
-                    {this.renderWheelItem(this.state.hours, width, (selectValue) => {
+                    {this.renderWheelItem(this.state.hours, itemWidth, (selectValue) => {
                         this.selectHours = this.state.hours[selectValue]
                     })}
                     {this.showUnit && this.renderTextItem('时')}
-                    {this.renderWheelItem(this.state.minutes, width, (selectValue) => {
+                    {this.renderWheelItem(this.state.minutes, itemWidth, (selectValue) => {
                         this.selectMinutes = this.state.minutes[selectValue]
                     })}
                     {this.showUnit && this.renderTextItem('分')}
-                    {this.renderWheelItem(this.state.seconds, width, (selectValue) => {
+                    {this.renderWheelItem(this.state.seconds, itemWidth, (selectValue) => {
                         this.selectSeconds = this.state.seconds[selectValue]
                     })}
                     {this.showUnit && this.renderTextItem('秒')}
@@ -217,14 +219,14 @@ export class DatePicker extends Component {
     render() {
         return (
             <TouchView style={{
-                backgroundColor: Colors.mainWhite,
-                width: Constant.Screen_Width,
+                backgroundColor: '#fff',
+                width: width,
             }}>
                 <TouchView style={{
-                    paddingVertical: BaseTools.getHeight(8),
+                    paddingVertical: Tools.getHeight(8),
                     flexDirection: 'row',
                     justifyContent: 'space-between',
-                    marginHorizontal: BaseTools.getWidth(10),
+                    marginHorizontal: Tools.getWidth(10),
                     alignItems: 'flex-end',
                 }}>
                     <Button
@@ -236,7 +238,7 @@ export class DatePicker extends Component {
                     <Button textStyle={[{
                         padding: 2,
                         color: '#000',
-                        fontSize: FontSize.textSize_16
+                        fontSize: 16
                     }, this.titleTextStyle]}>{this.title}</Button>
                     <Button
                         textStyle={[{color: '#000'}, this.sureTextStyle]}
@@ -250,8 +252,8 @@ export class DatePicker extends Component {
                 <CenterView style={{
                     height: this.itemHeight * 6,
                     borderTopWidth: 1,
-                    paddingTop: BaseTools.getHeight(10),
-                    borderColor: Colors.black30
+                    paddingTop: Tools.getHeight(10),
+                    borderColor: '#00000030'
                 }}>
                     {this.renderWheel(this.pickerType)}
                 </CenterView>
@@ -259,11 +261,11 @@ export class DatePicker extends Component {
         );
     }
 
-    renderWheelItem = (list, width, selectValue) => {
+    renderWheelItem = (list, itemWidth, selectValue) => {
         if (list.length > 0) {
             return (<Wheel
                 items={list}
-                style={{height: this.itemHeight * 5, width: width}}
+                style={{height: this.itemHeight * 5, width: itemWidth}}
                 itemStyle={{textAlign: 'center'}}
                 onChange={(v) => {
                     return selectValue(v)
