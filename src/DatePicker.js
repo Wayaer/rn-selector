@@ -18,7 +18,7 @@ export class DatePicker extends Component {
     constructor(props) {
         super(props);
         this.itemHeight = props.itemHeight || Tools.getHeight(35)
-        this.pickerType = props.pickerType || 'dateTime'
+        this.pickerType = this.returnPickerType(props)
         this.title = props.title || 'Select'
         this.cancelText = props.cancelText || 'cancel'
         this.sureText = props.sureText || 'sure'
@@ -36,37 +36,162 @@ export class DatePicker extends Component {
         }
         this.onSure = props.onSure
         this.onCancel = props.onCancel
-        this.pickerTimeInterval = props.pickerTimeInterval || ['2019-01-01', '2029-01-01']
-        this.startDateTime = this.pickerTimeInterval[0]
-        this.endDateTime = this.pickerTimeInterval[1]
+        this.pickerTimeInterval = this.returnPickerTimeInterval(props)
+        this.startDateTime = this.returnStartDateTime(props)
+        this.endDateTime = this.returnEndDateTime(props)
+        this.defaultSelectTime = this.returnDefaultSelectTime(props)
+        this.showUnit = props.showUnit ? true : false
         this.state = {
-            years: this.returnYears(),
-            months: this.returnNum(13, 1),
-            days: this.returnNum(32, 1),
-            hours: this.returnNum(24, 0),
-            minutes: this.returnNum(60, 0),
-            seconds: this.returnNum(60, 0),
+            years: this.returnYears(props),
+            months: this.returnNum(12, 1),
+            days: this.returnDays(new Date(this.returnDefaultSelectTime(props)).getFullYear(), new Date(this.returnDefaultSelectTime(props)).getMonth() + 1),
+            hours: this.returnNum(23, 0),
+            minutes: this.returnNum(59, 0),
+            seconds: this.returnNum(59, 0),
+            selectYearIndex: this.returnPickerType(props) === 'time' ? 0 : new Date(this.returnDefaultSelectTime(props)).getFullYear() - new Date(this.returnStartDateTime(props)).getFullYear(),
+            selectMonthsIndex: this.returnPickerType(props) === 'time' ? 0 : new Date(this.returnDefaultSelectTime(props)).getMonth(),
+            selectDayIndex: this.returnPickerType(props) === 'time' ? 0 : new Date(this.returnDefaultSelectTime(props)).getDate() - 1,
+            selectHoursIndex: this.returnPickerType(props) === 'time' || this.returnPickerType(props) === 'date' ? 0 : new Date(this.returnDefaultSelectTime(props)).getHours(),
+            selectMinutesIndex: this.returnPickerType(props) === 'time' || this.returnPickerType(props) === 'date' ? 0 : new Date(this.returnDefaultSelectTime(props)).getMinutes(),
+            selectSecondsIndex: this.returnPickerType(props) === 'time' || this.returnPickerType(props) === 'date' ? 0 : new Date(this.returnDefaultSelectTime(props)).getSeconds(),
         };
-        this.showUnit = props.showUnit || true
-        this.selectYears = '2019'
-        this.selectMonths = '01'
-        this.selectDays = '01'
-        this.selectHours = '00'
-        this.selectMinutes = '00'
-        this.selectSeconds = '00'
     }
 
+    returnPickerType = (props) => {
+        return props.pickerType || 'dateTime'
+    }
+    returnDefaultSelectTime = (props) => {
+        if (this.returnPickerType(props) !== 'time') {
+            const selectTime = props.defaultSelectTime || this.pickerTimeInterval[0]
+            this.checkDate(selectTime)
+            const defaultSelectTime = this.replaceDate(selectTime)
+            const startDateTime = this.replaceDate(this.returnStartDateTime(props))
+            const endDateTime = this.replaceDate(this.returnEndDateTime(props))
+
+            if (new Date(startDateTime) > new Date(defaultSelectTime)) {
+                return startDateTime
+            } else if (new Date(defaultSelectTime) < new Date(defaultSelectTime)) {
+                return endDateTime
+            }
+            return defaultSelectTime
+        }
+    }
+    replaceDate = (date) => {
+        return date.replace(/-/g, "/")
+    }
+
+
+    returnStartDateTime = (props) => {
+        if (this.returnPickerType(props) !== 'time') {
+            return this.replaceDate(this.checkDate(this.returnPickerTimeInterval(props)[0]))
+        }
+    }
+    returnEndDateTime = (props) => {
+        if (this.returnPickerType(props) !== 'time') {
+            return this.replaceDate(this.checkDate(this.returnPickerTimeInterval(props)[1]))
+        }
+    }
+    returnPickerTimeInterval = (props) => {
+        return (this.returnPickerType(props) !== 'time' && props.pickerTimeInterval && props.pickerTimeInterval) || this.checkPickerTimeInterval(props)
+    }
+
+    returnDays = (selectYear, selectMonth) => {
+        selectYear = Number(selectYear)
+        selectMonth = Number(selectMonth)
+        if (selectYear && selectMonth) {
+            return this.returnNum(this.monthSize(selectMonth, this.isLeapYearMethod(selectYear)), 1)
+        } else {
+            return this.returnNum(30, 1)
+        }
+    }
+    returnYears = (props) => {
+        const startYear = new Date(this.returnStartDateTime(props)).getFullYear()
+        const endYear = new Date(this.returnEndDateTime(props)).getFullYear()
+        let yearsList = []
+        for (let i = 0; i < (endYear - startYear) + 1; i++) {
+            yearsList.push(Number(startYear) + i)
+        }
+        return yearsList
+    }
+    changeDateTime = (indexData) => {
+        const timeStr = this.state.years[indexData.yearIndex !== undefined ? indexData.yearIndex : this.state.selectYearIndex] + '-'
+            + this.state.months[indexData.monthsIndex !== undefined ? indexData.monthsIndex : this.state.selectMonthsIndex] + '-'
+            + this.state.days[indexData.daysIndex !== undefined ? indexData.daysIndex : this.state.selectDayIndex] + ' '
+            + this.state.hours[indexData.hoursIndex !== undefined ? indexData.hoursIndex : this.state.selectHoursIndex] + ':'
+            + this.state.minutes[indexData.minutesIndex !== undefined ? indexData.minutesIndex : this.state.selectMinutesIndex] + ':'
+            + this.state.seconds[indexData.secondsIndex !== undefined ? indexData.secondsIndex : this.state.selectSecondsIndex]
+        const time = new Date(this.replaceDate(timeStr))
+        const days = this.returnDays(this.state.years[indexData.yearIndex !== undefined ? indexData.yearIndex : this.state.selectYearIndex], this.state.months[indexData.monthsIndex !== undefined ? indexData.monthsIndex : this.state.selectMonthsIndex])
+        let dayIndex = new Date(time).getDate()
+        if (days.length <= this.state.selectDayIndex) {
+            dayIndex = days.length
+        }
+        let monthsIndex = time.getMonth()
+        if (indexData.yearIndex !== undefined && this.isLeapYearMethod(this.state.years[this.state.selectYearIndex]) && !this.isLeapYearMethod(this.state.years[indexData.yearIndex]) && this.state.selectMonthsIndex === 1 && this.state.selectDayIndex === 28) {
+            monthsIndex -= 1
+        }
+        this.setState({
+            days: days,
+            selectYearIndex: time.getFullYear() - new Date(this.startDateTime).getFullYear(),
+            selectMonthsIndex: monthsIndex,
+            selectDayIndex: dayIndex - 1,
+            selectHoursIndex: time.getHours(),
+            selectMinutesIndex: time.getMinutes(),
+            selectSecondsIndex: time.getSeconds(),
+        })
+    }
+    changeTime = (indexData) => {
+        this.setState({
+            selectHoursIndex: indexData.hoursIndex !== undefined ? indexData.hoursIndex : this.state.selectHoursIndex,
+            selectMinutesIndex: indexData.minutesIndex !== undefined ? indexData.minutesIndex : this.state.selectMinutesIndex,
+            selectSecondsIndex: indexData.secondsIndex !== undefined ? indexData.secondsIndex : this.state.selectSecondsIndex,
+        })
+    }
+
+    monthSize = (month, isLeapYearMethod) => {
+        month = Number(month)
+        if (month === 4 || month === 6 || month === 9 || month === 11) {
+            return 30
+        } else if (month === 2) {
+            return isLeapYearMethod ? 29 : 28
+        } else {
+            return 31
+        }
+    }
+
+
+    checkPickerTimeInterval = (props) => {
+        if (this.returnPickerType(props) === 'date') {
+            return ['2019-01-01', '2020-01-01']
+        }
+        return ['2019-01-01 00:00:00', '2020-01-01 00:00:00']
+    }
+    checkDate = (dateTime) => {
+        if (!(Tools.regularStr(/^[1-9]\d{3}-(0[1-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1])\s+(20|21|22|23|[0-1]\d):[0-5]\d:[0-5]\d$/, dateTime) ||
+            Tools.regularStr(/^[1-9]\d{3}-(0[1-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1])$/, dateTime))) {
+            return console.error('日期格式错误 正确格式 2019-01-01 00:00:00 或 2019-01-01')
+        }
+        return Tools.checkLegalDate(dateTime.split(' ')[0]) && dateTime
+    }
 
     returnSelect = () => {
         switch (this.pickerType) {
             case 'date':
-                return this.selectYears + '-' + this.selectMonths + '-' + this.selectDays
+                return this.state.years[this.state.selectYearIndex]
+                    + '-' + this.state.months[this.state.selectMonthsIndex]
+                    + '-' + this.state.days[this.state.selectDayIndex]
             case 'dateTime':
-                return this.selectYears + '-' + this.selectMonths + '-' + this.selectDays + ' ' + this.selectHours + ':' + this.selectMinutes + ':' + this.selectSeconds
+                return this.state.years[this.state.selectYearIndex]
+                    + '-' + this.state.months[this.state.selectMonthsIndex]
+                    + '-' + this.state.days[this.state.selectDayIndex]
+                    + ' ' + this.state.hours[this.state.selectHoursIndex]
+                    + ':' + this.state.minutes[this.state.selectMinutesIndex]
+                    + ':' + this.state.seconds[this.state.selectSecondsIndex]
             case 'time':
-                return this.selectHours + ':' + this.selectMinutes + ':' + this.selectSeconds
+                return this.state.hours[this.state.selectHoursIndex]
+                    + ':' + this.state.minutes[this.state.selectMinutesIndex]
+                    + ':' + this.state.seconds[this.state.selectSecondsIndex]
         }
-        return 1
     }
 
     isLeapYearMethod = (year) => {
@@ -81,7 +206,7 @@ export class DatePicker extends Component {
     }
     returnNum = (num, startI) => {
         let numList = []
-        for (let i = startI; i < num; i++) {
+        for (let i = startI; i <= num; i++) {
             let h
             if (i < 10) {
                 h = '0' + i
@@ -92,129 +217,44 @@ export class DatePicker extends Component {
         }
         return numList
     }
-    returnYears = () => {
-        const startYear = new Date(this.startDateTime).getFullYear()
-        const endYear = new Date(this.endDateTime).getFullYear()
-        let yearsList = []
-        for (let i = 0; i < (endYear - startYear); i++) {
-            yearsList.push(startYear + i)
-        }
-        return yearsList
-    }
 
 
     renderWheel = (pickerType) => {
-        let view = <TouchView/>
-        let itemWidth = 80
-        switch (pickerType) {
-            case 'date':
-                itemWidth = (width - Tools.getWidth(30)) / 5
-                view = <TouchView style={{flexDirection: 'row'}}>
-                    {this.renderWheelItem(this.state.years, itemWidth, (selectValue) => {
-                        this.selectYears = this.state.years[selectValue]
-                        this.leapYear(selectValue)
-                    })}
-                    {this.showUnit && this.renderTextItem('年')}
-                    {this.renderWheelItem(this.state.months, itemWidth, (selectValue) => {
-                        this.selectMonths = this.state.months[selectValue]
-                        this.sizeMonth(selectValue)
-                    })}
-                    {this.showUnit && this.renderTextItem('月')}
-                    {this.renderWheelItem(this.state.days, itemWidth, (selectValue) => {
-                        this.selectDays = this.state.days[selectValue]
-                    })}
-                    {this.showUnit && this.renderTextItem('日')}
-                </TouchView>
-                break;
-            case 'dateTime':
-                itemWidth = (width - Tools.getWidth(35)) / 8
-                view = <TouchView style={{flexDirection: 'row'}}>
-                    {this.renderWheelItem(this.state.years, itemWidth, (selectValue) => {
-                        this.selectYears = this.state.years[selectValue]
-                        this.leapYear(this.state.years[selectValue])
-                    })}
-                    {this.showUnit && this.renderTextItem('年')}
-                    {this.renderWheelItem(this.state.months, itemWidth, (selectValue) => {
-                        this.selectMonths = this.state.months[selectValue]
-                        this.sizeMonth(selectValue)
-                    })}
-                    {this.showUnit && this.renderTextItem('月')}
-                    {this.renderWheelItem(this.state.days, itemWidth, (selectValue) => {
-                        this.selectDays = this.state.days[selectValue]
-                    })}
-                    {this.showUnit && this.showUnit && this.renderTextItem('日')}
-                    {this.renderWheelItem(this.state.hours, itemWidth, (selectValue) => {
-                        this.selectHours = this.state.hours[selectValue]
-                    })}
-                    {this.showUnit && this.renderTextItem('时')}
-                    {this.renderWheelItem(this.state.minutes, itemWidth, (selectValue) => {
-                        this.selectMinutes = this.state.minutes[selectValue]
-                    })}
-                    {this.showUnit && this.renderTextItem('分')}
-                    {this.renderWheelItem(this.state.seconds, itemWidth, (selectValue) => {
-                        this.selectSeconds = this.state.seconds[selectValue]
-                    })}
-                    {this.showUnit && this.renderTextItem('秒')}
-                </TouchView>
-                break;
-            case 'time':
-                itemWidth = (width - Tools.getWidth(30)) / 5
-                view = <TouchView style={{flexDirection: 'row'}}>
-                    {this.renderWheelItem(this.state.hours, itemWidth, (selectValue) => {
-                        this.selectHours = this.state.hours[selectValue]
-                    })}
-                    {this.showUnit && this.renderTextItem('时')}
-                    {this.renderWheelItem(this.state.minutes, itemWidth, (selectValue) => {
-                        this.selectMinutes = this.state.minutes[selectValue]
-                    })}
-                    {this.showUnit && this.renderTextItem('分')}
-                    {this.renderWheelItem(this.state.seconds, itemWidth, (selectValue) => {
-                        this.selectSeconds = this.state.seconds[selectValue]
-                    })}
-                    {this.showUnit && this.renderTextItem('秒')}
-                </TouchView>
-                break;
-        }
-        return (view)
+        const w = (width - Tools.getWidth(26)) / (this.pickerType === 'dateTime' ? 8 : 5)
+        const showDateView = (pickerType === 'date' || pickerType === 'dateTime')
+        const showTimeView = (pickerType === 'time' || pickerType === 'dateTime')
+
+        return (<TouchView style={{flexDirection: 'row'}}>
+            {showDateView && this.renderWheelItem(this.state.years, w, this.state.selectYearIndex, (index) => {
+                this.changeDateTime({"yearIndex": index})
+            })}
+            {showDateView && this.showUnit && this.renderTextItem('年')}
+            {showDateView && this.renderWheelItem(this.state.months, w, this.state.selectMonthsIndex, (index) => {
+                this.changeDateTime({"monthsIndex": index})
+            })}
+            {showDateView && this.showUnit && this.renderTextItem('月')}
+            {showDateView && this.renderWheelItem(this.state.days, w, this.state.selectDayIndex, (index) => {
+                this.changeDateTime({"daysIndex": index})
+            })}
+            {showDateView && this.showUnit && this.showUnit && this.renderTextItem('日')}
+            {showTimeView && this.renderWheelItem(this.state.hours, w, this.state.selectHoursIndex, (index) => {
+                (this.pickerType === "time" ? this.changeTime : this.changeDateTime)({"hoursIndex": index})
+            })}
+            {showTimeView && this.showUnit && this.renderTextItem('时')}
+            {showTimeView && this.renderWheelItem(this.state.minutes, w, this.state.selectMinutesIndex, (index) => {
+                (this.pickerType === "time" ? this.changeTime : this.changeDateTime)({"minutesIndex": index})
+            })}
+            {showTimeView && this.showUnit && this.renderTextItem('分')}
+            {showTimeView && this.renderWheelItem(this.state.seconds, w, this.state.selectSecondsIndex, (index) => {
+                (this.pickerType === "time" ? this.changeTime : this.changeDateTime)({"secondsIndex": index})
+            })}
+            {showTimeView && this.showUnit && this.renderTextItem('秒')}
+        </TouchView>)
+
     }
     renderTextItem = (text) => {
         return (<Button buttonStyle={this.textViewStyle} textStyle={this.textStyle}>{text}</Button>)
     }
-    leapYear = (selectYear) => {
-        if (this.selectMonths === '02') {
-            if (this.isLeapYearMethod(selectYear)) {
-                this.setState({
-                    days: this.returnNum(30, 1),
-                },)
-            } else {
-                this.setState({
-                    days: this.returnNum(29, 1),
-                })
-            }
-        }
-    }
-    sizeMonth = (selectValue) => {
-        if (selectValue === 3 || selectValue === 5 || selectValue === 8 || selectValue === 10) {
-            this.setState({
-                days: this.returnNum(31, 1),
-            })
-        } else if (selectValue === 1) {
-            if (this.isLeapYearMethod(this.selectYears)) {
-                this.setState({
-                    days: this.returnNum(30, 1),
-                },)
-            } else {
-                this.setState({
-                    days: this.returnNum(29, 1),
-                })
-            }
-        } else {
-            this.setState({
-                days: this.returnNum(32, 1),
-            })
-        }
-    }
-
 
     render() {
         return (
@@ -261,16 +301,16 @@ export class DatePicker extends Component {
         );
     }
 
-    renderWheelItem = (list, itemWidth, selectValue) => {
+    renderWheelItem = (list, w, index, selectValueIndex) => {
         if (list.length > 0) {
             return (<Wheel
                 items={list}
-                style={{height: this.itemHeight * 5, width: itemWidth}}
+                style={{height: this.itemHeight * 5, width: w}}
                 itemStyle={{textAlign: 'center'}}
-                onChange={(v) => {
-                    return selectValue(v)
+                index={index}
+                onChange={(i) => {
+                    return selectValueIndex(i)
                 }}/>)
         }
     }
-
 }

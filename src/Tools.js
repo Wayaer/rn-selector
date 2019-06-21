@@ -21,7 +21,24 @@ export default class Tools {
     static getHeight(h) {
         return (h / 1334) * height
     }
+    /**
+     * 检测日期是否合法
+     * @param date
+     * @returns {*}
+     */
+    static checkLegalDate(date) {
+        return Number(new Date(date).getDate()) === Number(date.substring(date.length - 2)) || console.error('非法日期=>', date)
+    }
 
+    /**
+     * 正则表达匹配
+     * @param re
+     * @param str
+     * @returns {*}
+     */
+    static regularStr(re, str) {
+        return re.test(str)
+    }
 
     static alertPullView(view, style) {
         return Overlay.show(
@@ -36,13 +53,30 @@ export default class Tools {
                 }, style && style]}>{view}</Overlay.PullView>)
     }
 
-    static alertPicker(pickerType, sureText, title, cancelText, onSureCallback, onCancelCallback) {
-        let pickerView = this.alertPullView(
+    /**
+     * 时间选择器
+     * @param pickerValue  date=>年月日选择     dateTime=>年月日时分秒选择     time=>时分秒选择
+     * @param onSureCallback
+     * @param onCancelCallback
+     */
+    static alertPicker(pickerValue, onSureCallback, onCancelCallback) {
+        let pickerView = Tools.alertPullView(
             <DatePicker
-                pickerType={pickerType}
-                sureText={sureText}
-                cancelText={cancelText}
-                title={title}
+                pickerType={pickerValue.pickerType}
+                itemHeight={pickerValue.itemHeight}
+                cancelTextStyle={pickerValue.cancelTextStyle}
+                cancelTouchStyle={pickerValue.cancelTouchStyle}
+                sureTouchStyle={pickerValue.sureTouchStyle}
+                sureTextStyle={pickerValue.sureTextStyle}
+                titleTextStyle={pickerValue.titleTextStyle}
+                textViewStyle={pickerValue.textViewStyle}
+                textStyle={pickerValue.textStyle}
+                showUnit={pickerValue.showUnit}//是否显示年月日时分秒
+                sureText={pickerValue.sureText}
+                defaultSelectTime={pickerValue.defaultSelectTime}//暂不支持time类型
+                pickerTimeInterval={pickerValue.pickerTimeInterval}//暂不支持time类型
+                cancelText={pickerValue.cancelText}
+                title={pickerValue.title}
                 onSure={(v) => {
                     Overlay.hide(pickerView)
                     return onSureCallback && onSureCallback(v)
@@ -53,4 +87,5 @@ export default class Tools {
                 }}/>
         )
     }
+
 }
